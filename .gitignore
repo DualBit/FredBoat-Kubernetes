@@ -1,0 +1,8 @@
+# Ignore all idea files
+.idea/
+
+# VirtualEnv
+venv-*/
+
+# Customized config
+k8s_fredboat_*/*
