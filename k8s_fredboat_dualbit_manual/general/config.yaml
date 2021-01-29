@@ -1,0 +1,216 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fredboat-configmap
+  labels:
+    app: fredboat
+data:
+  quarterdeck.yml: |
+    security:
+      admins:
+      # Do not leave any of them blank or empty.
+      - name: "dualbit"
+        pass: "dualbit"
+    whitelist:
+      # a list of discord user ids that shall never be ratelimited or blacklisted
+      userIds:
+      - 8388
+    spring:
+      main:
+        banner-mode: log
+      output:
+        ansi:
+          enabled: detect                # for developers: setting this to "always" will force colored logs in your console
+    server:
+      port: 4269                         # port of the backend
+    sentry:
+      dsn: "https://7b4d2bf427144a32addf964df8f092bb:8a8a7d68b93a4172bbc8913b21ca6c5b@sentry.carpi.dualb.it/13"
+    # If you are using docker to host the whole FredBoat, you can ignore all database settings below this line.
+    database:
+      main:
+        # FredBoat was written to work with PostgreSQL.
+        # FredBoat was written to work with PostgreSQL.
+        # If you are running with docker-compose then you don't need to change the jdbcUrl here.
+        # In PostgreSQL, role means user and vice versa. Keep that in mind when reading the following help and the provided links.
+        # If you are running your own PostgreSQL database, you will need to provide a role and a database belonging to that role.
+        # The role needs at least the permission to log in.
+        # All postgres databases used by FredBoat are required to have the Hstore extension enabled.
+        # Learn more about roles here: https://www.postgresql.org/docs/10/static/database-roles.html
+        # Learn more about creating databases here: https://www.postgresql.org/docs/10/static/manage-ag-createdb.html
+        # Learn more about the postgres jdbc url here: https://jdbc.postgresql.org/documentation/head/connect.html
+        # Learn more about creating extensions here: https://www.postgresql.org/docs/current/static/sql-createextension.html
+        # Example jdbc: "jdbc:postgresql://localhost:5432/fredboat?user=fredboat&password=youshallnotpass"
+        jdbcUrl: "jdbc:postgresql://fredboat-postgres-service:5432/fredboat?user=fredboat&password=youshallnotpass"
+      cache:
+        # Database for caching things, see config of main database above for details about the individual values.
+        # If you are running with docker-compose then you don't need to change the cache jdbcUrl here.
+        # The main and cache databases can be two databases inside a single postgres instance.
+        # They CANNOT be the same database due to the way flyway migrations work.
+        # The main benefit is that you don't have to backup/migrate the cache database, it can just be dropped/recreated
+        # If you do not provide a jdbc url for the cache database, FredBoat will still work (most likely), but may have a degraded
+        # performance, especially in high usage environments and when using Spotify playlists.
+        jdbcUrl: "jdbc:postgresql://fredboat-postgres-service:5432/fredboat_cache?user=fredboat&password=youshallnotpass"
+    # tune these according to your needs, or just leave them as is.
+    logging:
+      file:
+        max-history: 30
+        max-size: 1GB
+      path: ./logs/
+      level:
+        root: INFO
+        fredboat: DEBUG
+        com.fredboat: DEBUG
+    docs:
+      open: false               # Open the documentation endpoints for the public, and disable certain security features.
+      # DO NOT OPEN these on a production system.
+      host: ""                  # Reference: https://swagger.io/docs/specification/2-0/api-host-and-base-path/
+      basePath: ""              # Tell swagger where to find this Quarterdeck for Try out queries
+
+  application.yml: |
+    server: # REST server
+      port: 2333
+      address: 0.0.0.0
+    spring:
+      main:
+        banner-mode: log
+    lavalink:
+      server:
+        password: "dualbit"
+        sources:
+          youtube: true
+          bandcamp: true
+          soundcloud: true
+          twitch: true
+          vimeo: true
+          mixer: true
+          http: true
+          local: false
+        bufferDurationMs: 400
+        youtubePlaylistLoadLimit: 600
+        gc-warnings: true
+    metrics:
+      prometheus:
+        enabled: true
+        endpoint: /metrics
+    sentry:
+      dsn: "https://7b4d2bf427144a32addf964df8f092bb:8a8a7d68b93a4172bbc8913b21ca6c5b@sentry.carpi.dualb.it/13"
+    #  tags:
+    #    some_key: some_value
+    #    another_key: another_value
+    logging:
+      file:
+        max-history: 30
+        max-size: 1GB
+      path: ./logs/
+      level:
+        root: INFO
+        lavalink: INFO
+
+  common.yml: |
+    discordToken: "Njk0NTc2MDk4NTcwMTQxNzMw.XoNogw.oY3-E-v4UgouyHrbPT5HUDX_qQU"
+
+  fredboat.yml: |
+    config:
+      development:       false        # Set this to false for selfhosting. If you leave this enabled and complain about weird
+                                      # things happening to your bot in the selfhosting chat you will be publicly taunted.
+      prefix:            '<<'         # Default prefix used by the bot
+      botAdmins:         []           # Add comma separated userIds and roleIds that should have access to bot admin commands. Find role ids with the ;;roleinfo command
+      botOwners:         []           # Add comma separated userIds that should have access to bot OWNER commands. Mainly intended for bots that belong to teams
+      autoBlacklist:     true         # Set to true to automatically blacklist users who frequently hit the rate limits
+      game:              ""           # Set the displayed game/status. Leave empty quote marks for the default status
+      continuePlayback:  false        # Set to true to force the player to continue playback even if left alone
+      shardCount: 1                   # The number of shards this bot supports. Leave at 1 unless you know what you are doing.
+    # ratelimit:
+    #   ipBlocks: ["127.0.0.1/31", "127.0.0.3/32", "..."] # list of ip blocks
+    #   excludedIps: ["...", "..."] # ips which should be explicit excluded from usage by lavalink
+    #   strategy: "RotateOnBan" # RotateOnBan | LoadBalance | NanoSwitch | RotatingNanoSwitch
+    #   searchTriggersFail: true # Whether a search 429 should trigger marking the ip as failing
+    server:
+      port: 1356                      # Change the port of the API FredBoat exposes
+    spring:
+      main:
+        web-application-type: none    # Set this to "servlet", "reactive" or "none", whichever ends up working, to enable/disable the FredBoat API.
+      output:
+        ansi:
+          enabled: detect             # for developers: setting this to "always" will force colored logs in your console
+    audio-sources:
+      enableYouTube:     true         # Set to true to enable playing YouTube links
+      enableSoundCloud:  true         # Set to true to enable playing SoundCloud links
+      enableBandCamp:    true         # Set to true to enable playing BandCamp links
+      enableTwitch:      true         # Set to true to enable playing Twitch links
+      enableVimeo:       true         # Set to true to enable playing Vimeo links
+      enableMixer:       true         # Set to true to enable playing Mixer links
+      enableSpotify:     false        # Set to true to enable playing Spotify links
+      enableLocal:       false        # Set to true to enable playing local files
+      enableHttp:        false        # Set to true to enable playing direct links
+    ################################################################
+    ###                 Essential credentials
+    ################################################################
+    backend:
+      quarterdeck:
+        # Host address of your quarterdeck backend, including port unless you are using a reverse proxy.
+        # Example: https://such.example.com:4269/
+        # No need set the host when running Quarterdeck in Docker.
+        host: "http://fredboat-quarterdeck-service:4269/"
+        # Credentials used to authenticate to with Quarterdeck.
+        # By default Quarterdeck uses docker:docker when using our docker-compose files
+        user: "dualbit"
+        pass: "dualbit"
+    credentials:
+      # Used by the ;;split and ;;np commands. Must be hooked up to the Youtube Data API.
+      # You can add additional keys in case you are running a big bot
+      # How to get the key: https://developers.google.com/youtube/registering_an_application
+      # Add your google API key between the quotation marks
+      googleApiKeys:
+        - "AIzaSyBmOPb5bgh2DYmef2yl5fPVNtTt6L5kjJE"
+      # The preferred way of setting the token is described in ./common.yml
+      #discordBotToken: ""
+    ################################################################
+    ###                     Optional APIs
+    ################################################################
+      # Used to access imgur galleries for some RandomImageCommands
+      # Acquired from here: https://api.imgur.com/oauth2/addclient
+      # Choose an option that does not require an Authorization callback URL
+      imgurClientId:  ""
+      # Used to retrieve Spotify playlists
+      # Get them from here: https://developer.spotify.com/my-applications
+      spotifyId:      ""
+      spotifySecret:  ""
+      # Used by ;;weather command.
+      # Get them from: http://openweathermap.org/appid
+      openWeatherKey: ""
+      # Error aggregation service https://sentry.io/
+      sentryDsn:      "https://7b4d2bf427144a32addf964df8f092bb:8a8a7d68b93a4172bbc8913b21ca6c5b@sentry.carpi.dualb.it/13"
+    event-logger:
+      # Webhooks to Discord channels that will post some guild stats and shard status changes
+      # More information on webhooks: https://support.discordapp.com/hc/en-us/articles/228383668-Intro-to-Webhooks
+      # Example: "https://canary.discordapp.com/api/webhooks/1234567890/QWERTZUIOPasdfghjklYXCVBNM" (no, this one will not work)
+      eventLogWebhook:            "" # webhook url for connect / disconnect events
+      eventLogInterval:           1  # interval at which connect / disconnect events are posted in minutes
+      guildStatsWebhook:          "" # webhook url for guild stats
+      guildStatsInterval:         60 # interval at which guild stats are posted in minutes
+    # Lavalink is used for playing music.
+    # More on Lavalink: https://github.com/Frederikam/Lavalink
+    # If fully commented out, FredBoat will automatically guess that Lavalink is hosted locally at port 2333
+    lavalink:
+      nodes:
+        - name : "local"
+          host : "ws://fredboat-lavalink-service:2333"
+          pass : "dualbit"
+    #    - name : "remote1"
+    #      host : "ws://192.168.1.20:5556"
+    #      pass : "youshallnotpass"
+    #    - name : "remote2"
+    #      host : "ws://lavalink.example.com:5557"
+    #      pass : "youshallnotpass"
+    # tune these according to your needs, or just leave them as is.
+    logging:
+      file:
+        max-history: 30
+        max-size: 1GB
+      path: ./logs/
+      level:
+        root: INFO
+        fredboat: DEBUG
+        com.fredboat: DEBUG
+        net.dv8tion: DEBUG

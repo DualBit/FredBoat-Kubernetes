@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: fredboat-quarterdeck-service
+spec:
+  selector:
+    app: fredboat-quarterdeck
+  ports:
+    - protocol: TCP
+      port: 4269
+      targetPort: 4269

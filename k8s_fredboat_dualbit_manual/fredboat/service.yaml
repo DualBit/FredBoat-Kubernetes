@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: fredboat-fredboat-service
+spec:
+  selector:
+    app: fredboat-fredboat
+  ports:
+    - protocol: TCP
+      port: 1356
+      targetPort: 1356

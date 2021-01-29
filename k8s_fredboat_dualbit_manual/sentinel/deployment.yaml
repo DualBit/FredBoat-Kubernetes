@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fredboat-sentinel
+  labels:
+    app: fredboat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fredboat-sentinel
+  template:
+    metadata:
+      labels:
+        app: fredboat-sentinel
+    spec:
+      containers:
+        - name: fredboat-sentinel
+          image: fredboat/sentinel:dev
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 27212
+          env:
+            - name: SPRING_RABBITMQ_ADDRESSES
+              value: amqp://guest:guest@fredboat-rabbitmq-service
+          volumeMounts:
+          - name: fredboat-configmap-volume
+            mountPath: /opt/sentinel/common.yml
+            subPath: common.yml
+            readOnly: true
+      volumes:
+      - name: fredboat-configmap-volume
+        configMap:
+          name: fredboat-configmap

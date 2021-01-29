@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fredboat-quarterdeck
+  labels:
+    app: fredboat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fredboat-quarterdeck
+  template:
+    metadata:
+      labels:
+        app: fredboat-quarterdeck
+    spec:
+      containers:
+        - name: fredboat-quarterdeck
+          image: fredboat/quarterdeck:stable-v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4269
+          volumeMounts:
+          - name: fredboat-configmap-volume
+            mountPath: /opt/Quarterdeck/quarterdeck.yml
+            subPath: quarterdeck.yml
+            readOnly: true
+      volumes:
+      - name: fredboat-configmap-volume
+        configMap:
+          name: fredboat-configmap

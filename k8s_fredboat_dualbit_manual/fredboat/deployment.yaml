@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fredboat-fredboat
+  labels:
+    app: fredboat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fredboat-fredboat
+  template:
+    metadata:
+      labels:
+        app: fredboat-fredboat
+    spec:
+      containers:
+        - name: fredboat-fredboat
+          image: fredboat/fredboat:dev-v4
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 1356
+          env:
+            - name: SPRING_RABBITMQ_ADDRESSES
+              value: amqp://guest:guest@fredboat-rabbitmq-service
+          volumeMounts:
+          - name: fredboat-configmap-volume
+            mountPath: /opt/FredBoat/fredboat.yml
+            subPath: fredboat.yml
+            readOnly: true
+          - name: fredboat-configmap-volume
+            mountPath: /opt/FredBoat/common.yml
+            subPath: common.yml
+            readOnly: true
+      volumes:
+      - name: fredboat-configmap-volume
+        configMap:
+          name: fredboat-configmap
